@@ -12,11 +12,20 @@ import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { IJwt } from './config/interfaces/jwt.type';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { BullModule } from '@nestjs/bullmq';
+import { IRedis } from './config/interfaces/redis.interface';
+import { QUEUE_NAME } from './common/constants/queues.name';
+import { MailQueue } from './worker/queue/mail.queue';
+import { MailQueueEventListener } from './worker/event/mail.queue.event';
+import { MailService } from './mail/mail.service';
 @Module({
   imports: [
     UserModule,
     ConfigModule.forRoot({
       load: [appConfig],
+      isGlobal: true,
+      cache: true,
+      envFilePath: '.env',
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -29,6 +38,23 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
         };
       },
     }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const redisConfig = configService.get<IRedis>('redis');
+        return {
+          connection: { ...redisConfig },
+          defaultJobOptions: {
+            attempts: 3,
+            backoff: 5000,
+            removeOnComplete: 3000,
+            removeOnFail: 1000,
+          },
+        };
+      },
+    }),
+    BullModule.registerQueue({ name: QUEUE_NAME.MAIL_QUEUE }),
     ThrottlerModule.forRoot({
       throttlers: [
         {
@@ -54,10 +80,13 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
   controllers: [AppController],
   providers: [
     AppService,
+    MailQueue,
+    MailQueueEventListener,
     {
       provide: 'APP_GUARD',
       useClass: ThrottlerGuard,
     },
+    MailService,
   ],
 })
 export class AppModule {

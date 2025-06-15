@@ -6,10 +6,10 @@ import { AcessTokenStrategy } from './strategies/acess-token.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
-import { ConfigModule } from '@nestjs/config';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
-  imports: [UserModule, ConfigModule, PassportModule, JwtModule],
+  imports: [UserModule, PassportModule, JwtModule, BullModule],
   controllers: [AuthController],
   providers: [AuthService, AcessTokenStrategy, RefreshTokenStrategy],
 })

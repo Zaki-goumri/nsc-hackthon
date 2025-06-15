@@ -8,6 +8,7 @@ import {
   HttpStatus,
   UseInterceptors,
   UploadedFile,
+  ParseFilePipe,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SigninDto } from './dto/requests/sign-in.dto';
@@ -28,6 +29,7 @@ import { USER_ROLES } from 'src/user/types/user-role.type';
 import { Roles } from './decorators/role.decorator';
 import { AuthDto } from './dto/response/auth-response';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { CsvValidationPipe } from './pipes/csv-validation.pipe';
 
 @ApiTooManyRequestsResponse({
   description: 'rate limiting to many messges',
@@ -72,6 +74,7 @@ export class AuthController {
     description: 'User already exists due to duplicate email or phone number.',
     example: 'user already exist',
   })
+  @UseGuards(AccessTokenGuard, RoleGuard)
   @Post('/signup')
   @Roles(USER_ROLES.ADMIN)
   signup(@Body() signupDto: SignupDto): Promise<AuthDto> {
@@ -81,7 +84,7 @@ export class AuthController {
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
-        fileSize: 1024 * 1024 * 30, // 30 MB
+        fileSize: 1024 * 1024 * 10, 
       },
       fileFilter: (req, file, callback) => {
         const allowedMimeTypes = ['text/csv', 'application/vnd.ms-excel'];
@@ -96,12 +99,23 @@ export class AuthController {
       },
     }),
   )
-  @Post('/signup-many')
+  @Post('/bulk-signup')
   signupMany(
-    @UploadedFile() file: Express.Multer.File,
-    @Query(' temporary-password') tempPassword: boolean,
-    @Query(' welcome-email') welcomeEmail: boolean,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new CsvValidationPipe()],
+        errorHttpStatusCode: HttpStatus.BAD_REQUEST,
+      }),
+    )
+    file: Express.Multer.File,
+    @Query('skip-duplicates') skipDuplicates: boolean,
+    @Query('welcome-email') welcomeEmail: boolean,
+    @Query('temporary-password') tempPassword: boolean,
   ) {
-    return this.authService.signupMany(file, tempPassword, welcomeEmail);
+    return this.authService.bulkSignup(file, {
+      skipDuplicates,
+      tempPassword,
+      welcomeEmail,
+    });
   }
 }
