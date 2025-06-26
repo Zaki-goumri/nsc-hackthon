@@ -13,12 +13,25 @@ export default (): IConfig => {
       logger: 'advanced-console',
     },
     redis: {
-      url: process.env.REDIS_URL || 'redis://redis:6379',
-      host: process.env.REDIS_HOST || 'redis',
-      port: parseInt(process.env.REDIS_PORT || '6379'),
+      url: process.env.REDIS_URL!,
+      host: process.env.REDIS_HOST!,
+      port: parseInt(process.env.REDIS_PORT!),
     },
     jwt: {
       secret: process.env.JWT_SECRET || '',
     },
+    mail:{
+      password: process.env.EMAIL_PASSWORD || '',
+      email: process.env.EMAIL_ADDRESS || ''
+    },
+    elasticSearch: {
+      timeout: 3000,
+      node: process.env.ELASTICSEARCH_NODE!,
+      auth: {
+        username: process.env.ELASTICSEARCH_USERNAME!,
+        password: process.env.ELASTICSEARCH_PASSWORD!,
+      },
+    },
+  
   };
 };

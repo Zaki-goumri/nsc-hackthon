@@ -19,11 +19,13 @@ import { MailQueue } from './worker/queue/mail.queue';
 import { MailQueueEventListener } from './worker/event/mail.queue.event';
 import { MailService } from './mail/mail.service';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
-import { DepartementModule } from './departement/departement.module';
-import { DepartementModule } from './departement/departement.module';
+import { MailModule } from './mail/mail.module';
+import { HealthModule } from './health/health.module';
+import { SearchModule } from './search/search.module';
 @Module({
   imports: [
     UserModule,
+    MailModule.forRootAsync(),
     ConfigModule.forRoot({
       load: [appConfig],
       isGlobal: true,
@@ -57,7 +59,12 @@ import { DepartementModule } from './departement/departement.module';
         };
       },
     }),
-    BullModule.registerQueue({ name: QUEUE_NAME.MAIL_QUEUE }),
+    BullModule.registerQueue(
+      ...Object.values(QUEUE_NAME).map((queueName) => ({
+        name: queueName,
+      })),
+    ),
+
     ThrottlerModule.forRoot({
       throttlers: [
         {
@@ -94,7 +101,8 @@ import { DepartementModule } from './departement/departement.module';
         };
       },
     }),
-    DepartementModule,
+    HealthModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [
@@ -105,7 +113,6 @@ import { DepartementModule } from './departement/departement.module';
       provide: 'APP_GUARD',
       useClass: ThrottlerGuard,
     },
-    MailService,
   ],
 })
 export class AppModule {

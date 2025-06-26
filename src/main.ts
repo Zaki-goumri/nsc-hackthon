@@ -4,11 +4,20 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { ValidationPipe } from '@nestjs/common';
+import { LoggerInterceptor } from './common/interceptors/logger.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: ['warn', 'error', 'log'],
+    cors: {
+      origin: ['*'],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+      credentials: true,
+    },
+    logger: ['log', 'error', 'warn', 'debug', 'verbose'],
   });
+
+  app.useGlobalInterceptors(new LoggerInterceptor());
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

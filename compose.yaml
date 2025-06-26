@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: ptu-server
+    container_name: server
     ports:
       - '3000:3000'
     environment:
@@ -18,16 +18,33 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_started
+      redis:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     command: pnpm start:dev
-
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    restart: always
+    environment:
+    - discovery.type=single-node
+    - ELASTIC_PASSWORD=elastic
+    - xpack.security.enabled=false 
+    ports:
+      - 9200:9200
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   db:
     image: postgres:15
-    container_name: ptu-db
+    container_name: db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -39,7 +56,7 @@ services:
 
   redis:
     image: redis:7
-    container_name: ptu-redis
+    container_name: redis
     ports:
       - '6379:6379'
 

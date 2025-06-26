@@ -1,10 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import nodemailer from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { getWelcomeEmailTemplate } from './templates/welcome.template';
 import { LOGGER } from 'src/common/constants/logger.name';
 import { OtpMailProps, WelcomeEmailProps } from './types/mail-props.types';
 import { getPasswordResetEmailTemplate } from './templates/otp.template';
+import { IMail } from 'src/config/interfaces/mail.type';
 
 @Injectable()
 export class MailService {
@@ -14,12 +15,12 @@ export class MailService {
   >;
   private readonly logger = new Logger(LOGGER.MAIL);
 
-  constructor() {
+  constructor(@Inject('MAIL_CONFIG') private readonly mailConfig: IMail) {
     this.transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'platformptu@gmail.com',
-        pass: 'knwu agly dhkt qeeo ',
+        user: mailConfig.email,
+        pass: mailConfig.password,
       },
     });
   }
@@ -28,7 +29,7 @@ export class MailService {
     try {
       const { subject, html, text } = getPasswordResetEmailTemplate(otp);
       await this.transporter.sendMail({
-        from: 'ptuplatform@gmail.com',
+        from: this.mailConfig.email,
         to: email,
         subject,
         html,
@@ -47,7 +48,7 @@ export class MailService {
         users.map((user) => {
           const { subject, html, text } = getWelcomeEmailTemplate(user);
           return this.transporter.sendMail({
-            from: 'ptuplatform@gmail.com',
+            from: this.mailConfig.email,
             to: user.email,
             subject,
             html,
