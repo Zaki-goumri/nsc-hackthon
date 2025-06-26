@@ -20,9 +20,9 @@ export default (): IConfig => {
     jwt: {
       secret: process.env.JWT_SECRET || '',
     },
-    mail:{
+    mail: {
       password: process.env.EMAIL_PASSWORD || '',
-      email: process.env.EMAIL_ADDRESS || ''
+      email: process.env.EMAIL_ADDRESS || '',
     },
     elasticSearch: {
       timeout: 3000,
@@ -32,6 +32,10 @@ export default (): IConfig => {
         password: process.env.ELASTICSEARCH_PASSWORD!,
       },
     },
-  
+    cloudinary: {
+      name: process.env.CLOUDINARY_CLOUD_NAME!,
+      apiKey: process.env.CLOUDINARY_API_KEY!,
+      apiSecret: process.env.CLOUDINARY_API_SECRET!,
+    },
   };
 };

@@ -17,11 +17,11 @@ import { IRedis } from './config/interfaces/redis.interface';
 import { QUEUE_NAME } from './common/constants/queues.name';
 import { MailQueue } from './worker/queue/mail.queue';
 import { MailQueueEventListener } from './worker/event/mail.queue.event';
-import { MailService } from './mail/mail.service';
 import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 import { MailModule } from './mail/mail.module';
 import { HealthModule } from './health/health.module';
 import { SearchModule } from './search/search.module';
+import { SupabaseModule } from './supabase/supabase.module';
 @Module({
   imports: [
     UserModule,
@@ -103,6 +103,7 @@ import { SearchModule } from './search/search.module';
     }),
     HealthModule,
     SearchModule,
+    SupabaseModule
   ],
   controllers: [AppController],
   providers: [
