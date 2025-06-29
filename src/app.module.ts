@@ -22,6 +22,17 @@ import { MailModule } from './mail/mail.module';
 import { HealthModule } from './health/health.module';
 import { SearchModule } from './search/search.module';
 import { SupabaseModule } from './supabase/supabase.module';
+import { ShopModule } from './shop/shop.module';
+import { EmployeeModule } from './employee/employee.module';
+import { ProductModule } from './product/product.module';
+import { OrderModule } from './order/order.module';
+import { PaymentModule } from './payment/payment.module';
+import { DeliveryAgenciesModule } from './delivery-agencies/delivery-agencies.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { RefundsModule } from './refunds/refunds.module';
+import { AiModule } from './ai/ai.module';
+import { AnalyticsModule } from './analytics/analytics.module';
+import { BlackListModule } from './black-list/black-list.module';
 @Module({
   imports: [
     UserModule,
@@ -103,7 +114,18 @@ import { SupabaseModule } from './supabase/supabase.module';
     }),
     HealthModule,
     SearchModule,
-    SupabaseModule
+    SupabaseModule,
+    ShopModule,
+    EmployeeModule,
+    ProductModule,
+    OrderModule,
+    PaymentModule,
+    DeliveryAgenciesModule,
+    NotificationsModule,
+    RefundsModule,
+    AiModule,
+    AnalyticsModule,
+    BlackListModule
   ],
   controllers: [AppController],
   providers: [

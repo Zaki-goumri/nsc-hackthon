@@ -15,27 +15,32 @@ export class CsvValidationPipe extends FileValidator<Record<string, any>> {
       return false;
     }
 
-    const requiredFields = ['email', 'firstName', 'lastName', 'phoneNumber', 'role'];
-    const optionalFields = ['department', 'yearGroup','password'];
+    const requiredFields = [
+      'email',
+      'firstName',
+      'lastName',
+      'phoneNumber',
+      'role',
+    ];
 
     const csvContent = file.buffer.toString('utf-8');
     const lines = csvContent.split('\n');
-    const headers = lines[0].split(',').map(header => header.trim());
+    const headers = lines[0].split(',').map((header) => header.trim());
 
     const missingRequiredHeaders = requiredFields.filter(
-      field => !headers.includes(field)
+      (field) => !headers.includes(field),
     );
     if (missingRequiredHeaders.length > 0) {
       throw new BadRequestException(
-        `Missing required headers: ${missingRequiredHeaders.join(', ')}`
+        `Missing required headers: ${missingRequiredHeaders.join(', ')}`,
       );
     }
 
     const errors: string[] = [];
     for (let i = 1; i < lines.length; i++) {
-      if (!lines[i].trim()) continue; 
+      if (!lines[i].trim()) continue;
 
-      const values = lines[i].split(',').map(value => value.trim());
+      const values = lines[i].split(',').map((value) => value.trim());
       const row: Record<string, string> = {};
       headers.forEach((header, index) => {
         row[header] = values[index] || '';
@@ -43,9 +48,9 @@ export class CsvValidationPipe extends FileValidator<Record<string, any>> {
 
       const rowDto = plainToClass(CsvRowDto, row);
       const validationErrors = await validate(rowDto);
-      
+
       if (validationErrors.length > 0) {
-        const rowErrors = validationErrors.map(error => {
+        const rowErrors = validationErrors.map((error) => {
           const constraints = Object.values(error.constraints || {});
           return `Row ${i}: ${constraints.join(', ')}`;
         });
@@ -66,4 +71,5 @@ export class CsvValidationPipe extends FileValidator<Record<string, any>> {
   buildErrorMessage(): string {
     return 'CSV validation failed. Please ensure all required fields are present and valid.';
   }
-} 
+}
+

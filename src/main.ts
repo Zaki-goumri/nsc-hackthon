@@ -34,4 +34,5 @@ async function bootstrap() {
   app.use('/api', apiReference({ content: document }));
   await app.listen(process.env.PORT ?? 3000);
 }
+
 bootstrap();

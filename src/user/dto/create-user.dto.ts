@@ -18,10 +18,7 @@ import { USER_ROLES } from '../types/user-role.type';
  *   "lastName": "Doe",
  *   "email": "john.doe@example.com",
  *   "phoneNumber": "+1234567890",
- *   "userRole": "student",
- *   "department": "Computer Science",
- *   "yearGroup": "Year 1",
- *   "courses": ["Introduction to Computer Science"]
+ *   "userRole": "STUDENT",
  * }
  */
 export class CreateUserDto {
@@ -58,7 +55,7 @@ export class CreateUserDto {
   lastName: string;
 
   @ApiProperty({
-    example: USER_ROLES.STUDENT,
+    example: USER_ROLES.ADMIN,
     enum: USER_ROLES,
     description: 'The role of the user',
   })

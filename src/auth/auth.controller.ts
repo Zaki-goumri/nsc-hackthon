@@ -2,13 +2,9 @@ import {
   Controller,
   Post,
   Body,
-  Query,
   UseGuards,
   HttpCode,
   HttpStatus,
-  UseInterceptors,
-  UploadedFile,
-  ParseFilePipe,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SigninDto } from './dto/requests/sign-in.dto';
@@ -28,12 +24,9 @@ import { RoleGuard } from './guards/role.guard';
 import { USER_ROLES } from 'src/user/types/user-role.type';
 import { Roles } from './decorators/role.decorator';
 import { AuthDto } from './dto/response/auth-response';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { CsvValidationPipe } from './pipes/csv-validation.pipe';
 import { User as UserExtractor } from './decorators/user.decorator';
 import { User } from 'src/user/entities/user.entity';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
-import { Throttle } from '@nestjs/throttler';
 
 @ApiTooManyRequestsResponse({
   description: 'rate limiting to many messges',
@@ -78,52 +71,11 @@ export class AuthController {
     description: 'User already exists due to duplicate email or phone number.',
     example: 'user already exist',
   })
-  @UseGuards(AccessTokenGuard, RoleGuard)
   @Post('/signup')
-  @Roles(USER_ROLES.ADMIN)
   signup(@Body() signupDto: SignupDto): Promise<AuthDto> {
     return this.authService.signup(signupDto);
   }
 
-  @UseGuards(AccessTokenGuard, RoleGuard)
-  @Roles(USER_ROLES.ADMIN)
-  @UseInterceptors(
-    FileInterceptor('file', {
-      limits: {
-        fileSize: 1024 * 1024 * 10,
-      },
-      fileFilter: (req, file, callback) => {
-        const allowedMimeTypes = ['text/csv', 'application/vnd.ms-excel'];
-        if (allowedMimeTypes.includes(file.mimetype)) {
-          callback(null, true);
-        } else {
-          callback(
-            new Error('Invalid file type. Only CSV files are allowed.'),
-            false,
-          );
-        }
-      },
-    }),
-  )
-  @Post('/bulk-signup')
-  bulkSignup(
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [new CsvValidationPipe()],
-        errorHttpStatusCode: HttpStatus.BAD_REQUEST,
-      }),
-    )
-    file: Express.Multer.File,
-    @Query('skip-duplicates') skipDuplicates: boolean,
-    @Query('welcome-email') welcomeEmail: boolean,
-    @Query('temporary-password') tempPassword: boolean,
-  ) {
-    return this.authService.bulkSignup(file, {
-      skipDuplicates,
-      tempPassword,
-      welcomeEmail,
-    });
-  }
   @UseGuards(RefreshTokenGuard)
   @Post('/refresh')
   async generateNewRefreshToken(@UserExtractor() payload: User) {

@@ -60,7 +60,7 @@ export class CsvRowDto {
   lastName: string;
 
   @ApiProperty({
-    example: USER_ROLES.STUDENT,
+    example: USER_ROLES.ADMIN,
     enum: USER_ROLES,
     description: 'The role of the user',
   })

@@ -4,7 +4,6 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToOne,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole, USER_ROLE_VALUES } from '../types/user-role.type';
@@ -12,8 +11,8 @@ import { UserRole, USER_ROLE_VALUES } from '../types/user-role.type';
 @Entity()
 export class User {
   @ApiProperty({ example: 1, description: 'The unique identifier of the user' })
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @ApiProperty({
     example: 'john.doe@example.com',
@@ -45,9 +44,8 @@ export class User {
   phoneNumber!: string;
 
   @ApiProperty({
-    example: 'STUDENT',
-    description: 'The role of the user (e.g., ADMIN, STUDENT, TEACHER)',
-    enum: USER_ROLE_VALUES,
+    example: 'ADMIN',
+    description: 'The role of the user (e.g., ADMIN,MANAGER',
   })
   @Column({ type: 'enum', enum: USER_ROLE_VALUES })
   role!: UserRole;

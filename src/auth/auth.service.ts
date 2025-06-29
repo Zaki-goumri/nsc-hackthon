@@ -16,9 +16,6 @@ import { omit } from 'lodash';
 import { compareHash, generateHash } from 'src/common/utils/hash.utils';
 import { SignupDto } from './dto/requests/sign-up.dto';
 import { AuthDto } from './dto/response/auth-response';
-import csv from 'csv-parser';
-import { Readable } from 'stream';
-import { Optional } from 'src/common/types/optional.type';
 import { LOGGER } from 'src/common/constants/logger.name';
 import { User } from 'src/user/entities/user.entity';
 import { RedisService } from 'src/redis/redis.service';
@@ -32,7 +29,7 @@ import { JOB_NAME } from 'src/common/constants/jobs.name';
 export class AuthService {
   private readonly logger = new Logger(LOGGER.AUTH);
 
-  static getOtpKey(id: number) {
+  static getOtpKey(id: string) {
     return `otp:${id}`;
   }
   constructor(
@@ -123,39 +120,6 @@ export class AuthService {
       }
     }
   }
-  async bulkSignup(
-    file: Express.Multer.File,
-    options: {
-      skipDuplicates: boolean;
-      tempPassword: boolean;
-      welcomeEmail: boolean;
-    },
-  ) {
-    const stringified = file.buffer.toString('utf-8');
-    const parsed: unknown = await this.parseCsv(stringified);
-    return this.userService.bulkCreate(
-      parsed as Optional<SignupDto, 'password'>[],
-      options,
-    );
-  }
-  private async parseCsv(csvString: string) {
-    return new Promise((resolve, reject) => {
-      try {
-        const results: Record<string, string>[] = [];
-        Readable.from(csvString)
-          .pipe(csv())
-          .on('data', (data: Record<string, string>) => {
-            results.push(data);
-          })
-          .on('end', () => {
-            resolve(results);
-          });
-      } catch (error: unknown) {
-        console.error('Error parsing CSV file:', error);
-        reject(new Error('Error parsing CSV file'));
-      }
-    });
-  }
 
   async refresh(payload: User) {
     const accessTokenPayload = {
@@ -193,7 +157,7 @@ export class AuthService {
     return 'otp is sent';
   }
 
-  async validateOtp(sentOtp: string, userId: number) {
+  async validateOtp(sentOtp: string, userId: string) {
     const cachedOtp = await this.redisService.get<string>(
       AuthService.getOtpKey(userId),
     );
