@@ -98,7 +98,6 @@ export class ShopController {
       }
     }
 
-    // Create shop with image URL
     const shopData = {
       ...createShopDto,
       imageUrl: imageUrl || createShopDto.imageUrl || '',

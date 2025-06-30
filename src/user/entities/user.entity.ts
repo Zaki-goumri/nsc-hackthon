@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole, USER_ROLE_VALUES } from '../types/user-role.type';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class User {
@@ -25,6 +26,7 @@ export class User {
     example: 'hashedpassword',
     description: 'The hashed password of the user',
   })
+  @Exclude()
   @Column({ type: 'varchar', length: 100 })
   password!: string;
 
