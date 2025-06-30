@@ -30,7 +30,7 @@ export class Shop {
     example: 'Your one-stop shop for all tech gadgets and accessories',
     description: 'The description of the shop',
   })
-  @Column({ type: 'text',nullable:true })
+  @Column({ type: 'text', nullable: true })
   description?: string;
 
   @ApiProperty({

@@ -1,10 +1,17 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, FindOptionsWhere } from 'typeorm';
 import { CreateShopDto } from './dto/create-shop.dto';
 import { UpdateShopDto } from './dto/update-shop.dto';
 import { Shop } from './entities/shop.entity';
-import { PaginationQueryDto, PaginatedResponseDto } from '../common/dtos/pagination.dto';
+import {
+  PaginationQueryDto,
+  PaginatedResponseDto,
+} from '../common/dtos/pagination.dto';
 import { SearchService } from '../search/search.service';
 
 export interface ShopFilters {
@@ -41,12 +48,12 @@ export class ShopService {
       ...createShopDto,
       ownerId,
     });
-    
+
     const savedShop = await this.shopRepository.save(shop);
-    
+
     // Index the shop in Elasticsearch
     await this.indexShop(savedShop);
-    
+
     return savedShop;
   }
 
@@ -62,11 +69,11 @@ export class ShopService {
 
     // Build where conditions
     const whereConditions: FindOptionsWhere<Shop> = {};
-    
+
     if (filters?.name) {
       whereConditions.name = Like(`%${filters.name}%`);
     }
-    
+
     if (filters?.ownerId) {
       whereConditions.ownerId = filters.ownerId;
     }
@@ -122,7 +129,11 @@ export class ShopService {
   /**
    * Update a shop (only by owner)
    */
-  async update(id: string, updateShopDto: UpdateShopDto, userId: string): Promise<Shop> {
+  async update(
+    id: string,
+    updateShopDto: UpdateShopDto,
+    userId: string,
+  ): Promise<Shop> {
     const shop = await this.findOne(id);
 
     // Check if user is the owner
@@ -132,10 +143,10 @@ export class ShopService {
 
     Object.assign(shop, updateShopDto);
     const updatedShop = await this.shopRepository.save(shop);
-    
+
     // Update the shop in Elasticsearch
     await this.indexShop(updatedShop);
-    
+
     return updatedShop;
   }
 
@@ -151,10 +162,10 @@ export class ShopService {
     }
 
     await this.shopRepository.remove(shop);
-    
+
     // Remove from Elasticsearch
     await this.searchService.delete(this.SHOP_INDEX, {
-      term: { id: shop.id }
+      term: { id: shop.id },
     });
   }
 
@@ -164,7 +175,7 @@ export class ShopService {
   async searchShops(
     query: string,
     paginationQuery: PaginationQueryDto,
-    filters?: { ownerId?: string }
+    filters?: { ownerId?: string },
   ): Promise<PaginatedResponseDto<ShopSearchResult>> {
     const { page = 1, limit = 10 } = paginationQuery;
     const from = (page - 1) * limit;
@@ -177,70 +188,67 @@ export class ShopService {
             multi_match: {
               query,
               fields: ['name^2', 'description'], // name has higher weight
-              fuzziness: 'AUTO', 
-              operator: 'or'
-            }
-          }
-        ]
-      }
+              fuzziness: 'AUTO',
+              operator: 'or',
+            },
+          },
+        ],
+      },
     };
 
     // Add filters
     if (filters?.ownerId) {
-      searchQuery.bool.filter = [
-        { term: { ownerId: filters.ownerId } }
-      ];
+      searchQuery.bool.filter = [{ term: { ownerId: filters.ownerId } }];
     }
 
     const searchBody = {
       query: searchQuery,
       from: from,
       size: limit,
-      sort: [
-        { _score: { order: 'desc' } },
-        { createdAt: { order: 'desc' } }
-      ]
+      sort: [{ _score: { order: 'desc' } }, { createdAt: { order: 'desc' } }],
     };
 
     try {
       const results = await this.searchService.search<ShopSearchResult>(
         this.SHOP_INDEX,
-        searchBody
+        searchBody,
       );
 
       // Get total count for pagination
       const countQuery = {
-        query: searchQuery
+        query: searchQuery,
       };
-      
+
       const countResult = await this.searchService.search<ShopSearchResult>(
         this.SHOP_INDEX,
-        countQuery
+        countQuery,
       );
 
       return new PaginatedResponseDto(
         results as ShopSearchResult[],
         countResult.length,
         page,
-        limit
+        limit,
       );
     } catch (error) {
       // Fallback to PostgreSQL search if Elasticsearch fails
       const fallbackResult = await this.searchByName(query, paginationQuery);
-      
+
       // Convert Shop entities to ShopSearchResult format
-      const convertedResults: ShopSearchResult[] = fallbackResult.data.map(shop => ({
-      ...shop,
-      description:shop.description ?? '',
-        createdAt: shop.createdAt.toISOString(),
-        updatedAt: shop.updatedAt.toISOString(),
-      }));
+      const convertedResults: ShopSearchResult[] = fallbackResult.data.map(
+        (shop) => ({
+          ...shop,
+          description: shop.description ?? '',
+          createdAt: shop.createdAt.toISOString(),
+          updatedAt: shop.updatedAt.toISOString(),
+        }),
+      );
 
       return new PaginatedResponseDto(
         convertedResults,
         fallbackResult.meta.total,
         page,
-        limit
+        limit,
       );
     }
   }
@@ -272,7 +280,7 @@ export class ShopService {
   private async indexShop(shop: Shop): Promise<void> {
     try {
       const shopDocument = {
-       ...shop,
+        ...shop,
         createdAt: shop.createdAt.toISOString(),
         updatedAt: shop.updatedAt.toISOString(),
       };
@@ -289,7 +297,7 @@ export class ShopService {
    */
   async reindexAllShops(): Promise<void> {
     const shops = await this.shopRepository.find();
-    
+
     for (const shop of shops) {
       await this.indexShop(shop);
     }
@@ -336,7 +344,7 @@ export class ShopService {
     byOwner: Record<string, number>;
   }> {
     const total = await this.shopRepository.count();
-    
+
     const byOwner = await this.shopRepository
       .createQueryBuilder('shop')
       .select('shop.ownerId', 'ownerId')

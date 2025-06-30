@@ -33,8 +33,15 @@ import { RefundsModule } from './refunds/refunds.module';
 import { AiModule } from './ai/ai.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { BlackListModule } from './black-list/black-list.module';
+import { WhattsupModule } from './whattsup/whattsup.module';
+import { HttpModule } from '@nestjs/axios';
+
 @Module({
   imports: [
+    HttpModule.register({
+      timeout: 5000,
+      maxRedirects: 5,
+    }),
     UserModule,
     MailModule.forRootAsync(),
     ConfigModule.forRoot({
@@ -125,7 +132,8 @@ import { BlackListModule } from './black-list/black-list.module';
     RefundsModule,
     AiModule,
     AnalyticsModule,
-    BlackListModule
+    BlackListModule,
+    WhattsupModule
   ],
   controllers: [AppController],
   providers: [
