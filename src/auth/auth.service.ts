@@ -6,6 +6,7 @@ import {
   HttpException,
   HttpStatus,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { SigninDto } from './dto/requests/sign-in.dto';
@@ -13,7 +14,7 @@ import { UserService } from 'src/user/user.service';
 import { ConfigService } from '@nestjs/config';
 import { IJwt } from 'src/config/interfaces/jwt.type';
 import { omit } from 'lodash';
-import { compareHash, generateHash } from 'src/common/utils/hash.utils';
+import { compareHash } from 'src/common/utils/hash.utils';
 import { SignupDto } from './dto/requests/sign-up.dto';
 import { AuthDto } from './dto/response/auth-response';
 import { LOGGER } from 'src/common/constants/logger.name';
@@ -24,6 +25,7 @@ import { QUEUE_NAME } from 'src/common/constants/queues.name';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { JOB_NAME } from 'src/common/constants/jobs.name';
+import { BlackListService } from 'src/black-list/black-list.service';
 
 @Injectable()
 export class AuthService {
@@ -37,10 +39,14 @@ export class AuthService {
     private userService: UserService,
     private configService: ConfigService,
     private redisService: RedisService,
+    private blackListServiec: BlackListService,
     @InjectQueue(QUEUE_NAME.MAIL_QUEUE) private readonly mailQueue: Queue,
   ) {}
   async signin(signinDto: SigninDto): Promise<AuthDto> {
     const { email, password } = signinDto;
+    if (await this.blackListServiec.isUserBlacklisted(email, password))
+      new ForbiddenException('this user is black listed ');
+
     const user = await this.userService.findOneByEmail(email);
     if (!user) throw new NotFoundException(' user not found');
     const isPasswordMatched = await compareHash(password, user.password);
@@ -72,10 +78,16 @@ export class AuthService {
 
   async signup(signupDto: SignupDto) {
     try {
-      const hashedPassword = await generateHash(signupDto.password);
+      if (
+        await this.blackListServiec.isUserBlacklisted(
+          signupDto.email,
+          signupDto.password,
+        )
+      )
+        new ForbiddenException('this user is black listed ');
+
       const user = await this.userService.create({
         ...signupDto,
-        password: hashedPassword,
       });
 
       const jwtConfig = this.configService.get<IJwt>('jwt');

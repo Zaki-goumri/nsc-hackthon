@@ -20,9 +20,6 @@ import {
   ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { RoleGuard } from './guards/role.guard';
-import { USER_ROLES } from 'src/user/types/user-role.type';
-import { Roles } from './decorators/role.decorator';
 import { AuthDto } from './dto/response/auth-response';
 import { User as UserExtractor } from './decorators/user.decorator';
 import { User } from 'src/user/entities/user.entity';
@@ -42,7 +39,7 @@ import { RefreshTokenGuard } from './guards/refresh-token.guard';
 })
 @ApiUnauthorizedResponse({
   description: 'Unauthorized user or Unauthorized role to do this action ',
-  example: 'Role STUDENT is not authorized for this action',
+  example: 'Rol MANAGER is not authorized for this action',
 })
 @Controller('auth')
 export class AuthController {

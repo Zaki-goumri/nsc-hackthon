@@ -9,10 +9,12 @@ import { RefreshTokenStrategy } from './strategies/refresh-token.strategy';
 import { BullModule } from '@nestjs/bullmq';
 import { RedisModule } from 'src/redis/redis.module';
 import { QUEUE_NAME } from 'src/common/constants/queues.name';
+import { BlackListModule } from 'src/black-list/black-list.module';
 
 @Module({
   imports: [
     UserModule,
+    BlackListModule,
     PassportModule,
     JwtModule,
     RedisModule,

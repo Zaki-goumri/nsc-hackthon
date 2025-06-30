@@ -3,13 +3,12 @@ import {
   IsEmail,
   IsNotEmpty,
   MinLength,
-  IsOptional,
   IsEnum,
   IsStrongPassword,
   IsMobilePhone,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { UserRole, USER_ROLES } from 'src/user/types/user-role.type';
 /**
  * DTO for creating a single user account.
@@ -72,13 +71,4 @@ export class SignupDto {
   @IsString()
   @IsMobilePhone('ar-DZ')
   phoneNumber: string;
-
-  @ApiPropertyOptional({ example: 'Computer Science' })
-  @IsString()
-  @IsOptional()
-  department?: string;
-
-  @ApiProperty({ example: 'Year 1' })
-  @IsString()
-  yearGroup: string;
 }
