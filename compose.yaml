@@ -19,7 +19,7 @@ services:
       DB_NAME: ptu_learning
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      AI_URL: http://172.20.10.2:5000
+      AI_URL: http://ai:5000
     dns:
       - 8.8.8.8
       - 1.1.1.1
@@ -32,10 +32,28 @@ services:
         condition: service_started
       elasticsearch:
         condition: service_healthy
+      ai:
+        condition: service_started
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     command: pnpm start:dev
+
+  ai:
+    build:
+      context: ./data_ai_tejarati
+      dockerfile: Dockerfile
+    container_name: ai
+    ports:
+      - '5000:5000'
+    networks:
+      - app-network
+    volumes:
+      - ./data_ai_tejarati:/app
+    environment:
+      - FLASK_ENV=development
+    depends_on:
+      - db
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4

@@ -1,5 +1,5 @@
 import { Controller, Post, Body } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ApiOperation, ApiBody } from '@nestjs/swagger';
 import { RiskService } from './risk.service';
 
 class RiskTestDto {
@@ -18,4 +18,3 @@ export class RiskController {
     return this.riskService.analyzeRisk(body.name, body.product_category);
   }
 }
-

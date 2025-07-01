@@ -313,4 +313,3 @@ export const delivery_data = [
     price: '2500.00DA',
   },
 ];
-
