@@ -1,15 +1,21 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Body, 
-  Patch, 
-  Param, 
-  Delete, 
-  Query, 
-  ParseUUIDPipe 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  ParseUUIDPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
@@ -28,14 +34,53 @@ export class OrderController {
     return await this.orderService.create(createOrderDto);
   }
 
+  @Post(':id/confirm')
+  @ApiOperation({ summary: 'Customer confirms the order via WhatsApp/email' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Order ID' })
+  async confirmOrder(@Param('id', ParseUUIDPipe) id: string) {
+    return this.orderService.confirmOrder(id);
+  }
+
   @Get()
-  @ApiOperation({ summary: 'List/search orders (all shops) with pagination and filters' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page (default: 10)' })
-  @ApiQuery({ name: 'shopId', required: false, type: String, description: 'Filter by shop ID' })
-  @ApiQuery({ name: 'orderStatus', required: false, enum: ORDER_STATUS_VALUES, description: 'Filter by order status' })
-  @ApiQuery({ name: 'riskLevel', required: false, enum: RISK_LEVEL_VALUES, description: 'Filter by risk level' })
-  @ApiQuery({ name: 'search', required: false, type: String, description: 'Search by customer name, phone, or address' })
+  @ApiOperation({
+    summary: 'List/search orders (all shops) with pagination and filters',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 10)',
+  })
+  @ApiQuery({
+    name: 'shopId',
+    required: false,
+    type: String,
+    description: 'Filter by shop ID',
+  })
+  @ApiQuery({
+    name: 'orderStatus',
+    required: false,
+    enum: ORDER_STATUS_VALUES,
+    description: 'Filter by order status',
+  })
+  @ApiQuery({
+    name: 'riskLevel',
+    required: false,
+    enum: RISK_LEVEL_VALUES,
+    description: 'Filter by risk level',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Search by customer name, phone, or address',
+  })
   async findAll(
     @Query() paginationQuery: PaginationQueryDto,
     @Query('shopId') shopId?: string,
@@ -58,6 +103,15 @@ export class OrderController {
     return await this.orderService.findOne(id);
   }
 
+  @Patch(':id/delivered')
+  @ApiOperation({
+    summary: 'Seller marks item as delivered (starts 48h escrow timer)',
+  })
+  @ApiParam({ name: 'id', type: 'string', description: 'Order ID' })
+  async markDelivered(@Param('id', ParseUUIDPipe) id: string) {
+    return this.orderService.markDelivered(id);
+  }
+
   @Patch(':id')
   @ApiOperation({ summary: 'Update any editable fields of an order' })
   @ApiParam({ name: 'id', type: 'string', description: 'Order ID' })
@@ -74,5 +128,17 @@ export class OrderController {
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     await this.orderService.remove(id);
     return { message: 'Order deleted' };
+  }
+
+  @Get('paginated')
+  @ApiOperation({ summary: 'Get paginated orders' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page (default: 10)' })
+  @ApiQuery({ name: 'shopId', required: false, type: String, description: 'Filter by shop ID' })
+  async getPaginatedOrders(
+    @Query() pagination: PaginationQueryDto,
+    @Query('shopId') shopId?: string,
+  ) {
+    return this.orderService.getPaginatedOrders(pagination, shopId);
   }
 }

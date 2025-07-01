@@ -11,10 +11,10 @@ import { Product } from 'src/product/entities/product.entity';
 import { Shop } from 'src/shop/entities/shop.entity';
 import { User } from 'src/user/entities/user.entity';
 import { DeliveryAgency } from 'src/delivery-agencies/entities/delivery-agency.entity';
-import { CONTACT_PREFS, ContactPref } from '../types/contact-pref.type';
-import { PAYMENT_STATUSES, PaymentStatus } from '../types/payment-status.type';
-import { ORDER_STATUSES, OrderStatus } from '../types/order-status.type';
-import { RISK_LEVELS, RiskLevel } from '../types/risk-level.type';
+import { CONTACT_PREF_VALUES, ContactPref } from '../types/contact-pref.type';
+import { PAYMENT_STATUS_VALUES, PaymentStatus } from '../types/payment-status.type';
+import { ORDER_STATUS_VALUES, OrderStatus } from '../types/order-status.type';
+import { RISK_LEVEL_VALUES, RiskLevel } from '../types/risk-level.type';
 
 @Entity()
 export class Order {
@@ -80,11 +80,10 @@ export class Order {
   customerAddress: string;
 
   @ApiProperty({
+    enum: CONTACT_PREF_VALUES,
     description: 'Preferred contact method for the customer',
-    enum: CONTACT_PREFS,
-    example: 'whatsapp',
   })
-  @Column({ type: 'enum', enum: CONTACT_PREFS })
+  @Column({ type: 'enum', enum: CONTACT_PREF_VALUES })
   contactPref: ContactPref;
 
   @ApiProperty({
@@ -99,27 +98,24 @@ export class Order {
   deliveryAgency: DeliveryAgency;
 
   @ApiProperty({
+    enum: PAYMENT_STATUS_VALUES,
     description: 'Payment status of the order',
-    enum: PAYMENT_STATUSES,
-    example: 'pending',
   })
-  @Column({ type: 'enum', enum: PAYMENT_STATUSES })
+  @Column({ type: 'enum', enum: PAYMENT_STATUS_VALUES })
   paymentStatus: PaymentStatus;
 
   @ApiProperty({
+    enum: ORDER_STATUS_VALUES,
     description: 'Current status of the order',
-    enum: ORDER_STATUSES,
-    example: 'new',
   })
-  @Column({ type: 'enum', enum: ORDER_STATUSES })
+  @Column({ type: 'enum', enum: ORDER_STATUS_VALUES })
   orderStatus: OrderStatus;
 
   @ApiProperty({
+    enum: RISK_LEVEL_VALUES,
     description: 'Risk level associated with the order',
-    enum: RISK_LEVELS,
-    example: 'low',
   })
-  @Column({ type: 'enum', enum: RISK_LEVELS })
+  @Column({ type: 'enum', enum: RISK_LEVEL_VALUES })
   riskLevel: RiskLevel;
 
   @ApiProperty({
@@ -130,10 +126,16 @@ export class Order {
   riskProbability: number;
 
   @ApiProperty({
+    description: 'Delivery amount of the item in DZ',
+    example: 450,
+  })
+  @Column('integer')
+  deliveryAmount: number;
+
+  @ApiProperty({
     description: 'Date and time when the order was created',
     example: '2024-06-01T12:34:56.789Z',
   })
   @CreateDateColumn()
   createdAt: Date;
 }
-

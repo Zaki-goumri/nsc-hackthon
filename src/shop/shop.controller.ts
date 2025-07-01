@@ -1,12 +1,12 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Body, 
-  Patch, 
-  Param, 
-  Delete, 
-  Query, 
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
   UseGuards,
   UseInterceptors,
   UploadedFile,
@@ -17,13 +17,12 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { 
-  ApiTags, 
-  ApiOperation, 
-  ApiResponse, 
-  ApiQuery, 
-  ApiParam, 
-  ApiBearerAuth,
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+  ApiParam,
   ApiConsumes,
   ApiBody,
 } from '@nestjs/swagger';
@@ -38,7 +37,6 @@ import { User as UserExtractor } from '../auth/decorators/user.decorator';
 import { SupabaseService } from '../supabase/supabase.service';
 
 @ApiTags('Shop Management')
-@ApiBearerAuth()
 @UseGuards(AccessTokenGuard)
 @Controller('shops')
 export class ShopController {
@@ -65,7 +63,11 @@ export class ShopController {
       required: ['name', 'description'],
     },
   })
-  @ApiResponse({ status: 201, description: 'Shop created successfully', type: Shop })
+  @ApiResponse({
+    status: 201,
+    description: 'Shop created successfully',
+    type: Shop,
+  })
   @ApiResponse({ status: 400, description: 'Bad request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @HttpCode(HttpStatus.CREATED)
@@ -79,22 +81,22 @@ export class ShopController {
           new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB
           new FileTypeValidator({ fileType: '.(jpg|jpeg|png|webp)' }),
         ],
-        fileIsRequired: false, 
+        fileIsRequired: false,
       }),
     )
     image?: Express.Multer.File,
   ) {
     let imageUrl = '';
-    
+
     if (image) {
       try {
         imageUrl = await this.supabaseService.uploadFile(
           image,
           'shops', // Store in shops folder
-          'nsc-hackathon'
+          'nsc-hackathon',
         );
       } catch (error) {
-        throw new Error(`Failed to upload image: ${error.message}`);
+        throw new Error(`Failed to upload image: ${error}`);
       }
     }
 
@@ -108,10 +110,30 @@ export class ShopController {
 
   @Get()
   @ApiOperation({ summary: 'Get all shops with pagination and filters' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page (default: 10)' })
-  @ApiQuery({ name: 'name', required: false, type: String, description: 'Filter by shop name' })
-  @ApiQuery({ name: 'ownerId', required: false, type: String, description: 'Filter by owner ID' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 10)',
+  })
+  @ApiQuery({
+    name: 'name',
+    required: false,
+    type: String,
+    description: 'Filter by shop name',
+  })
+  @ApiQuery({
+    name: 'ownerId',
+    required: false,
+    type: String,
+    description: 'Filter by owner ID',
+  })
   @ApiResponse({ status: 200, description: 'Shops retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async findAll(
@@ -125,11 +147,34 @@ export class ShopController {
 
   @Get('search')
   @ApiOperation({ summary: 'Search shops using Elasticsearch' })
-  @ApiQuery({ name: 'q', required: true, type: String, description: 'Search query' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page (default: 10)' })
-  @ApiQuery({ name: 'ownerId', required: false, type: String, description: 'Filter by owner ID' })
-  @ApiResponse({ status: 200, description: 'Search results retrieved successfully' })
+  @ApiQuery({
+    name: 'q',
+    required: true,
+    type: String,
+    description: 'Search query',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 10)',
+  })
+  @ApiQuery({
+    name: 'ownerId',
+    required: false,
+    type: String,
+    description: 'Filter by owner ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Search results retrieved successfully',
+  })
   @ApiResponse({ status: 400, description: 'Missing search query' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async searchShops(
@@ -142,22 +187,40 @@ export class ShopController {
   }
 
   @Get('mine')
-  @ApiOperation({ summary: 'Get current user\'s shops' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page (default: 10)' })
-  @ApiResponse({ status: 200, description: 'User shops retrieved successfully' })
+  @ApiOperation({ summary: "Get current user's shops" })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 10)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User shops retrieved successfully',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async findMine(
     @Query() paginationQuery: PaginationQueryDto,
     @UserExtractor() user: User,
   ) {
-    return await this.shopService.findMine(user.id, paginationQuery);
+    const userId = user.id;
+    return await this.shopService.findMine(userId, paginationQuery);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a specific shop by ID' })
   @ApiParam({ name: 'id', type: 'string', description: 'Shop ID' })
-  @ApiResponse({ status: 200, description: 'Shop retrieved successfully', type: Shop })
+  @ApiResponse({
+    status: 200,
+    description: 'Shop retrieved successfully',
+    type: Shop,
+  })
   @ApiResponse({ status: 404, description: 'Shop not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async findOne(@Param('id') id: string) {
@@ -182,7 +245,11 @@ export class ShopController {
     },
   })
   @ApiParam({ name: 'id', type: 'string', description: 'Shop ID' })
-  @ApiResponse({ status: 200, description: 'Shop updated successfully', type: Shop })
+  @ApiResponse({
+    status: 200,
+    description: 'Shop updated successfully',
+    type: Shop,
+  })
   @ApiResponse({ status: 404, description: 'Shop not found' })
   @ApiResponse({ status: 403, description: 'Forbidden - not the owner' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -203,14 +270,14 @@ export class ShopController {
     image?: Express.Multer.File,
   ) {
     let imageUrl = '';
-    
+
     // Upload new image to Supabase if provided
     if (image) {
       try {
         imageUrl = await this.supabaseService.uploadFile(
           image,
           'shops', // Store in shops folder
-          'nsc-hackathon'
+          'nsc-hackathon',
         );
       } catch (error) {
         throw new Error(`Failed to upload image: ${error.message}`);
@@ -234,10 +301,7 @@ export class ShopController {
   @ApiResponse({ status: 403, description: 'Forbidden - not the owner' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(
-    @Param('id') id: string,
-    @UserExtractor() user: User,
-  ) {
+  async remove(@Param('id') id: string, @UserExtractor() user: User) {
     await this.shopService.remove(id, user.id);
   }
 }

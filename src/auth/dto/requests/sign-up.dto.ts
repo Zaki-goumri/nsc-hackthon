@@ -4,7 +4,6 @@ import {
   IsNotEmpty,
   MinLength,
   IsEnum,
-  IsStrongPassword,
   IsMobilePhone,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -41,7 +40,6 @@ export class SignupDto {
   @IsString({ message: 'Password must be a string ' })
   @IsNotEmpty({ message: 'password cant be empty' })
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  @IsStrongPassword()
   @Type(() => String)
   password: string;
 

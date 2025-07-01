@@ -8,6 +8,7 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -21,9 +22,11 @@ import {
   ApiTooManyRequestsResponse,
 } from '@nestjs/swagger';
 import { User } from './entities/user.entity';
+import { AccessTokenGuard } from 'src/auth/guards/access-token.guard';
 /*
  * user crud endpoints
  */
+@UseGuards(AccessTokenGuard)
 @Controller('user')
 // common responses
 @ApiTooManyRequestsResponse({

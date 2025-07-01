@@ -1,3 +1,4 @@
 export const QUEUE_NAME = {
   MAIL_QUEUE: 'MAIL_QUEUE',
+  WHATTSUP_QUEUE:'WHATTSUP_QUEUE'
 } as const;

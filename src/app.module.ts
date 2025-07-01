@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -35,9 +35,11 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { BlackListModule } from './black-list/black-list.module';
 import { WhattsupModule } from './whattsup/whattsup.module';
 import { HttpModule } from '@nestjs/axios';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     HttpModule.register({
       timeout: 5000,
       maxRedirects: 5,
@@ -133,7 +135,7 @@ import { HttpModule } from '@nestjs/axios';
     AiModule,
     AnalyticsModule,
     BlackListModule,
-    WhattsupModule
+    WhattsupModule,
   ],
   controllers: [AppController],
   providers: [

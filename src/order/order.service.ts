@@ -4,10 +4,14 @@ import { Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { Order } from './entities/order.entity';
-import { PaginationQueryDto, PaginatedResponseDto } from '../common/dtos/pagination.dto';
+import {
+  PaginationQueryDto,
+  PaginatedResponseDto,
+} from '../common/dtos/pagination.dto';
 import { SearchService } from '../search/search.service';
-import { ORDER_STATUS_VALUES, OrderStatus } from './types/order-status.type';
-import { RISK_LEVEL_VALUES, RiskLevel } from './types/risk-level.type';
+import { OrderStatus } from './types/order-status.type';
+import { RiskLevel } from './types/risk-level.type';
+import { format } from 'date-fns';
 
 @Injectable()
 export class OrderService {
@@ -68,8 +72,13 @@ export class OrderService {
     };
 
     try {
-      const results = await this.searchService.search<Order>('orders', searchBody);
-      const filteredResults: Order[] = (Array.isArray(results) ? results : []).filter((r): r is Order => !!r);
+      const results = await this.searchService.search<Order>(
+        'orders',
+        searchBody,
+      );
+      const filteredResults: Order[] = (
+        Array.isArray(results) ? results : []
+      ).filter((r): r is Order => !!r);
       const total = (results as any)?.meta?.total ?? filteredResults.length;
       return new PaginatedResponseDto(filteredResults, total, page, limit);
     } catch (e) {
@@ -97,7 +106,7 @@ export class OrderService {
   }
 
   /**
-   * Update any editable fields 
+   * Update any editable fields
    */
   async update(id: string, updateOrderDto: UpdateOrderDto): Promise<Order> {
     const order = await this.findOne(id);
@@ -106,9 +115,61 @@ export class OrderService {
   }
 
   /**
-   * Soft-delete an order 
+   * Soft-delete an order
    */
   async remove(id: string): Promise<void> {
     await this.orderRepository.delete(id);
+  }
+
+  /**
+   * Confirm an order (customer confirms via WhatsApp/email)
+   */
+  async confirmOrder(id: string): Promise<Order> {
+    const order = await this.findOne(id);
+    order.orderStatus = 'confirmed'; // or ORDER_STATUS_VALUES.CONFIRMED
+    return this.orderRepository.save(order);
+  }
+
+  /**
+   * Mark an order as delivered (starts 48h escrow timer)
+   */
+  async markDelivered(id: string): Promise<Order> {
+    const order = await this.findOne(id);
+    order.orderStatus = 'delivered'; // or ORDER_STATUS_VALUES.DELIVERED
+    // Optionally, start 48h escrow timer logic here
+    return this.orderRepository.save(order);
+  }
+
+  async getPaginatedOrders(
+    pagination: PaginationQueryDto,
+    shopId?: string,
+  ): Promise<PaginatedResponseDto<any>> {
+    const { page = 1, limit = 10 } = pagination;
+    const skip = (page - 1) * limit;
+    const where: any = {};
+    if (shopId) {
+      where.shopId = shopId;
+    }
+    const [data, total] = await this.orderRepository.findAndCount({
+      where,
+      skip,
+      take: limit,
+      order: { createdAt: 'DESC' },
+      relations: ['product', 'deliveryAgency'],
+    });
+    const mapped = data.map((order) => ({
+      id: order.id,
+      customerName: order.customerName,
+      product: order.product?.name || '',
+      date: order.createdAt ? format(new Date(order.createdAt), 'MMMM dd') : '',
+      deliveryAgency: order.deliveryAgency?.name || '',
+      paymentStatus: order.paymentStatus
+        ? order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)
+        : '',
+      contactMethod: order.contactPref
+        ? order.contactPref.charAt(0).toUpperCase() + order.contactPref.slice(1)
+        : '',
+    }));
+    return new PaginatedResponseDto(mapped, total, page, limit);
   }
 }

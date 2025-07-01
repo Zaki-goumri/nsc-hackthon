@@ -10,10 +10,7 @@ export class WhattsupService {
 
   constructor(private readonly http: HttpService) {}
 
-  async sendText(
-    to: string,
-    message: string,
-  ): Promise<AxiosResponse<any>> {            
+  async sendText(to: string, message: string): Promise<AxiosResponse<any>> {
     const url = `https://graph.facebook.com/v18.0/${this.phoneNumberId}/messages`;
 
     const payload = {
@@ -23,7 +20,7 @@ export class WhattsupService {
       text: { body: message },
     };
 
-    return firstValueFrom(                      
+    return firstValueFrom(
       this.http.post(url, payload, {
         headers: { Authorization: `Bearer ${this.token}` },
       }),
@@ -34,7 +31,7 @@ export class WhattsupService {
     to: string,
     mediaId: string,
     caption?: string,
-  ): Promise<AxiosResponse<any>> {          
+  ): Promise<AxiosResponse<any>> {
     const url = `https://graph.facebook.com/v18.0/${this.phoneNumberId}/messages`;
 
     const payload: Record<string, any> = {

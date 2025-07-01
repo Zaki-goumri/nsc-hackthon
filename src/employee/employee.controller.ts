@@ -73,5 +73,5 @@ export class EmployeeController {
   ) {
     await this.employeeService.removeEmployeeFromShop(shopId, userId);
     return { message: 'Employee removed successfully' };
-  }    
+  }
 }

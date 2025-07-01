@@ -69,6 +69,7 @@ export class AuthService {
         expiresIn: '7d',
       }),
     ]);
+
     return {
       accessToken,
       refreshToken,
@@ -108,6 +109,7 @@ export class AuthService {
           expiresIn: '7d',
         }),
       ]);
+
       return {
         accessToken,
         refreshToken,
