@@ -37,5 +37,6 @@ export default (): IConfig => {
       apiKey: process.env.CLOUDINARY_API_KEY!,
       apiSecret: process.env.CLOUDINARY_API_SECRET!,
     },
+    aiUrl: process.env.AI_URL!,
   };
 };

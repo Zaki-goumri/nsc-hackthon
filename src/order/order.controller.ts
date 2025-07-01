@@ -9,23 +9,70 @@ import {
   Query,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { PaginationQueryDto } from '../common/dtos/pagination.dto';
 import { ORDER_STATUS_VALUES, OrderStatus } from './types/order-status.type';
 import { RISK_LEVEL_VALUES, RiskLevel } from './types/risk-level.type';
+import { InventoryQueryDto } from './dto/inventory-query.dto';
 
 @Controller('orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
+
+  @Get('inventory')
+  @ApiOperation({ summary: 'Get product inventory for orders' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 10)',
+  })
+  @ApiQuery({
+    name: 'shopId',
+    required: false,
+    type: String,
+    description: 'Filter by shop ID',
+  })
+  async getProductInventory(@Query() query: InventoryQueryDto) {
+    const { page, limit, shopId } = query;
+    return this.orderService.getProductInventory({ page, limit }, shopId);
+  }
+
+  @Get('paginated')
+  @ApiOperation({ summary: 'Get paginated orders' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Items per page (default: 10)',
+  })
+  @ApiQuery({
+    name: 'shopId',
+    required: false,
+    type: String,
+    description: 'Filter by shop ID',
+  })
+  async getPaginatedOrders(
+    @Query() pagination: PaginationQueryDto,
+    @Query('shopId') shopId: string,
+  ) {
+    return this.orderService.getPaginatedOrders(pagination, shopId);
+  }
 
   @Post()
   @ApiOperation({ summary: 'Create a new order' })
@@ -99,7 +146,7 @@ export class OrderController {
   @Get(':id')
   @ApiOperation({ summary: 'Get one order by ID' })
   @ApiParam({ name: 'id', type: 'string', description: 'Order ID' })
-  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+  async findOne(@Param('id') id: string) {
     return await this.orderService.findOne(id);
   }
 
@@ -108,7 +155,7 @@ export class OrderController {
     summary: 'Seller marks item as delivered (starts 48h escrow timer)',
   })
   @ApiParam({ name: 'id', type: 'string', description: 'Order ID' })
-  async markDelivered(@Param('id', ParseUUIDPipe) id: string) {
+  async markDelivered(@Param('id') id: string) {
     return this.orderService.markDelivered(id);
   }
 
@@ -116,7 +163,7 @@ export class OrderController {
   @ApiOperation({ summary: 'Update any editable fields of an order' })
   @ApiParam({ name: 'id', type: 'string', description: 'Order ID' })
   async update(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id') id: string,
     @Body() updateOrderDto: UpdateOrderDto,
   ) {
     return await this.orderService.update(id, updateOrderDto);
@@ -128,17 +175,5 @@ export class OrderController {
   async remove(@Param('id', ParseUUIDPipe) id: string) {
     await this.orderService.remove(id);
     return { message: 'Order deleted' };
-  }
-
-  @Get('paginated')
-  @ApiOperation({ summary: 'Get paginated orders' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (default: 1)' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page (default: 10)' })
-  @ApiQuery({ name: 'shopId', required: false, type: String, description: 'Filter by shop ID' })
-  async getPaginatedOrders(
-    @Query() pagination: PaginationQueryDto,
-    @Query('shopId') shopId?: string,
-  ) {
-    return this.orderService.getPaginatedOrders(pagination, shopId);
   }
 }

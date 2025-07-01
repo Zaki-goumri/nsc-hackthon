@@ -1,12 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsString,
-  IsNotEmpty,
-  IsUUID,
-  IsNumber,
-  IsEnum,
-  Min,
-} from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsEnum, Min } from 'class-validator';
 import { CONTACT_PREF_VALUES, ContactPref } from '../types/contact-pref.type';
 import {
   PAYMENT_STATUS_VALUES,
@@ -17,11 +10,9 @@ import { RISK_LEVEL_VALUES, RiskLevel } from '../types/risk-level.type';
 
 export class CreateOrderDto {
   @ApiProperty()
-  @IsUUID()
   productId: string;
 
   @ApiProperty()
-  @IsUUID()
   shopId: string;
 
   @ApiProperty()
@@ -44,7 +35,6 @@ export class CreateOrderDto {
   contactPref: ContactPref;
 
   @ApiProperty()
-  @IsUUID()
   deliveryAgencyId: string;
 
   @ApiProperty({ enum: PAYMENT_STATUS_VALUES })
@@ -64,7 +54,6 @@ export class CreateOrderDto {
   riskProbability: number;
 
   @ApiProperty()
-  @IsUUID()
   createdBy: string;
 
   @ApiProperty()
@@ -73,4 +62,3 @@ export class CreateOrderDto {
   @Min(0)
   deliveryAmount: number;
 }
-

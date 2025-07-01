@@ -280,7 +280,7 @@ export class ShopController {
           'nsc-hackathon',
         );
       } catch (error) {
-        throw new Error(`Failed to upload image: ${error.message}`);
+        throw new Error(`Failed to upload image: ${error}`);
       }
     }
 

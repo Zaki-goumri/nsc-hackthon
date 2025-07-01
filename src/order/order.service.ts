@@ -142,7 +142,7 @@ export class OrderService {
 
   async getPaginatedOrders(
     pagination: PaginationQueryDto,
-    shopId?: string,
+    shopId: string,
   ): Promise<PaginatedResponseDto<any>> {
     const { page = 1, limit = 10 } = pagination;
     const skip = (page - 1) * limit;
@@ -164,12 +164,153 @@ export class OrderService {
       date: order.createdAt ? format(new Date(order.createdAt), 'MMMM dd') : '',
       deliveryAgency: order.deliveryAgency?.name || '',
       paymentStatus: order.paymentStatus
-        ? order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1)
+        ? order.paymentStatus.charAt(0).toUpperCase() +
+          order.paymentStatus.slice(1)
         : '',
       contactMethod: order.contactPref
         ? order.contactPref.charAt(0).toUpperCase() + order.contactPref.slice(1)
         : '',
     }));
-    return new PaginatedResponseDto(mapped, total, page, limit);
+    return new PaginatedResponseDto(orders, total, page, limit);
+  }
+
+  async getProductInventory(
+    pagination: PaginationQueryDto,
+    shopId?: string,
+  ): Promise<PaginatedResponseDto<any>> {
+    const { page = 1, limit = 10 } = pagination;
+    const skip = (page - 1) * limit;
+    const where: any = {};
+    if (shopId) {
+      where.shopId = shopId;
+    }
+    const [data, total] = await this.orderRepository.findAndCount({
+      where,
+      skip,
+      take: limit,
+      order: { createdAt: 'DESC' },
+      relations: ['product'],
+    });
+
+    const mapped = data.map((order) => ({
+      id: order.product?.id || '',
+      name: order.product?.name || '',
+      image: order.product?.imageUrls?.[0] || '',
+      orderStatus: order.orderStatus
+        ? order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)
+        : '',
+      price: order.product?.price ? `${order.product.price}DA` : '',
+    }));
+
+    return new PaginatedResponseDto(delivery_data, total, page, limit);
   }
 }
+
+export const orders = [
+  {
+    id: 1,
+    customerName: 'Benammour Rihab Meriem',
+    product: 'Smartwatch DZ+',
+    date: 'June 28',
+    deliveryAgency: 'Yalidine',
+    paymentStatus: 'Paid',
+    contactMethod: 'WhatsApp',
+  },
+  {
+    id: 2,
+    customerName: 'Benammour Rihab Meriem',
+    product: 'Smartwatch DZ+',
+    date: 'June 28',
+    deliveryAgency: 'Yalidine',
+    paymentStatus: 'Paid',
+    contactMethod: 'WhatsApp',
+  },
+  {
+    id: 3,
+    customerName: 'Benammour Rihab Meriem',
+    product: 'Smartwatch DZ+',
+    date: 'June 28',
+    deliveryAgency: 'Yalidine',
+    paymentStatus: 'Paid',
+    contactMethod: 'WhatsApp',
+  },
+  {
+    id: 4,
+    customerName: 'Benammour Rihab Meriem',
+    product: 'Smartwatch DZ+',
+    date: 'June 28',
+    deliveryAgency: 'Yalidine',
+    paymentStatus: 'Paid',
+    contactMethod: 'WhatsApp',
+  },
+  {
+    id: 5,
+    customerName: 'Benammour Rihab Meriem',
+    product: 'Smartwatch DZ+',
+    date: 'June 28',
+    deliveryAgency: 'Yalidine',
+    paymentStatus: 'Paid',
+    contactMethod: 'WhatsApp',
+  },
+  {
+    id: 6,
+    customerName: 'Benammour Rihab Meriem',
+    product: 'Smartwatch DZ+',
+    date: 'June 28',
+    deliveryAgency: 'Yalidine',
+    paymentStatus: 'Paid',
+    contactMethod: 'WhatsApp',
+  },
+];
+
+export const delivery_data = [
+  {
+    id: '202547896',
+    name: 'Smartwatch DZ+',
+    image:
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=80&h=80&fit=crop&crop=center',
+    orderStatus: 'on Hold',
+    price: '2500.00DA',
+  },
+  {
+    id: '202547896',
+    name: 'Smartwatch DZ+',
+    image:
+      'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=80&h=80&fit=crop&crop=center',
+    orderStatus: 'Arrived',
+    price: '2500.00DA',
+  },
+  {
+    id: '202547896',
+    name: 'Smartwatch DZ+',
+    image:
+      'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=80&h=80&fit=crop&crop=center',
+    orderStatus: 'Canceled',
+    price: '2500.00DA',
+  },
+  {
+    id: '202547896',
+    name: 'Smartwatch DZ+',
+    image:
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop',
+    orderStatus: 'on Hold',
+    price: '2500.00DA',
+  },
+  {
+    id: '202547896',
+    name: 'Smartwatch DZ+',
+    image:
+      'https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=80&h=80&fit=crop&crop=center',
+    orderStatus: 'Arrived',
+    price: '2500.00DA',
+  },
+  {
+    id: '202547896',
+    name: 'Smartwatch DZ+',
+    image:
+      'https://images.unsplash.com/photo-1544117519-31a4b719223d?w=80&h=80&fit=crop&crop=center',
+    orderStatus: 'Canceled',
+    price: '2500.00DA',
+  },
+];
+

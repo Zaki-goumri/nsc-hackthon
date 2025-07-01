@@ -6,6 +6,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: server
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     ports:
       - '3000:3000'
     environment:
@@ -17,9 +19,12 @@ services:
       DB_NAME: ptu_learning
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      AI_URL: http://172.20.10.2:5000
     dns:
       - 8.8.8.8
       - 1.1.1.1
+    networks:
+      - app-network
     depends_on:
       db:
         condition: service_started
@@ -31,37 +36,53 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     command: pnpm start:dev
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: elasticsearch
     restart: always
     environment:
-    - discovery.type=single-node
-    - ELASTIC_PASSWORD=elastic
-    - xpack.security.enabled=false 
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=elastic
+      - xpack.security.enabled=false
     ports:
-      - 9200:9200
+      - '9200:9200'
+    networks:
+      - app-network
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
+      test: ['CMD', 'curl', '-f', 'http://localhost:9200']
       interval: 10s
       timeout: 5s
       retries: 5
+
   db:
     image: postgres:15
     container_name: db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: ptu_learning
     ports:
       - '5432:5432'
+    networks:
+      - app-network
     volumes:
       - pgdata:/var/lib/postgresql/data
 
   redis:
     image: redis:7
     container_name: redis
+    restart: unless-stopped
     ports:
       - '6379:6379'
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   pgdata:
+    driver: local

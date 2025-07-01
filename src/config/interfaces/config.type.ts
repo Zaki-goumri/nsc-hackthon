@@ -11,4 +11,5 @@ export interface IConfig {
   mail: IMail;
   elasticSearch: IElasticSearch;
   cloudinary: ICloudinary;
+  aiUrl: string;
 }
